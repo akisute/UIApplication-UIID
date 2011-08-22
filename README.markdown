@@ -1,7 +1,7 @@
 README
 ------
 
-This addition to the UIApplication generates Unique Installation Identifier (UIID) as a replacement of the depreciated UDID in iOS 5. The generated UIID can either be persistent (stored in Keychain) or non-persistent (stored in NSUserDefaults). The identifier is unique for each installetions of your applications and is much secure compared to the `[[UIDevice sharedDevice] uniqueIdentifier].`
+This addition to the UIApplication generates Unique Installation Identifier (UIID) as a replacement of the depreciated UDID in iOS 5. The generated UIID can either be persistent (stored in Keychain) or non-persistent (stored in NSUserDefaults). The identifier is unique for each installetions of your applications and is much more secure compared to the `[[UIDevice sharedDevice] uniqueIdentifier].`
 
 Original gist is here: https://gist.github.com/1161447
 
