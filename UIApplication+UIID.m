@@ -88,7 +88,11 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
             // kSecAttrAccessible is iOS 4 or later only
             // Current device is running on iOS 3.X, do nothing here
         } else {
-            [query setObject:(id)kSecAttrAccessibleWhenUnlocked forKey:(id)kSecAttrAccessible];
+            // Set kSecAttrAccessibleAfterFirstUnlock so that background applications are able to access this key.
+            // Keys defined as kSecAttrAccessibleAfterFirstUnlock will be migrated to the new devices/installations via encrypted backups.
+            // If you want different UIID per device, use kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly instead.
+            // Keep in mind that keys defined as kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly will be removed after restoring from a backup.
+            [query setObject:(id)kSecAttrAccessibleAfterFirstUnlock forKey:(id)kSecAttrAccessible];
         }
         [query setObject:[uuidString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];
         
@@ -106,6 +110,35 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
     }
     
     return uuidString;
+}
+
+- (void)resetUniqueInstallationIdentifier
+{
+#if UIID_PERSISTENT
+    // UIID must be persistent even if the application is removed from devices
+    // Use keychain as a storage
+    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
+                           (id)kSecClassGenericPassword,            (id)kSecClass,
+                           UIApplication_UIID_Key,                  (id)kSecAttrGeneric,
+                           UIApplication_UIID_Key,                  (id)kSecAttrAccount,
+                           [[NSBundle mainBundle] bundleIdentifier],(id)kSecAttrService,
+                           nil];
+    OSStatus result = SecItemDelete((CFDictionaryRef)query);
+    if (result == noErr) {
+        NSLog(@"[INFO}  Unique Installation Identifier is successfully reset.");
+    } else if (result == errSecItemNotFound) {
+        NSLog(@"[INFO}  Unique Installation Identifier is successfully reset.");
+    } else {
+        NSLog(@"[ERROR] Coudn't delete the Keychain Item. result = %ld query = %@", result, query);
+    }
+#else
+    // UIID may not be persistent
+    // Use NSUserDefalt as a storage
+    // WARNING: this could be much more vulnerable since the NSUserDefaults stores values as a plist file. Any jailbroken user can extract values from it.
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:UIApplication_UIID_Key];
+    NSLog(@"[INFO}  Unique Installation Identifier is successfully reset.");
+#endif
+    
 }
 
 @end
