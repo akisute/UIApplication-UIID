@@ -138,7 +138,6 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:UIApplication_UIID_Key];
     NSLog(@"[INFO}  Unique Installation Identifier is successfully reset.");
 #endif
-    
 }
 
 @end
