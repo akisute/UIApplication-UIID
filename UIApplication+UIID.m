@@ -8,6 +8,12 @@
 #import "UIApplication+UIID.h"
 
 
+#if UIID_PERSISTENT
+// Use keychain as a storage
+#import <Security/Security.h>    
+#endif
+
+
 static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier";
 
 
@@ -23,7 +29,36 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
 #if UIID_PERSISTENT
     // UIID must be persistent even if the application is removed from devices
     // Use keychain as a storage
-    // TODO:
+    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
+                           (id)kSecClassGenericPassword,            (id)kSecClass,
+                           UIApplication_UIID_Key,                  (id)kSecAttrGeneric,
+                           UIApplication_UIID_Key,                  (id)kSecAttrAccount,
+                           [[NSBundle mainBundle] bundleIdentifier],(id)kSecAttrService,
+                           (id)kSecMatchLimitOne,                   (id)kSecMatchLimit,
+                           (id)kCFBooleanTrue,                      (id)kSecReturnAttributes,
+                           nil];
+    NSDictionary *attributes = nil;
+    OSStatus result = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&attributes);
+    if (result == noErr) {
+        
+        NSMutableDictionary *valueQuery = [NSMutableDictionary dictionaryWithDictionary:attributes];
+        [attributes release];
+        
+        [valueQuery setObject:(id)kSecClassGenericPassword  forKey:(id)kSecClass];
+        [valueQuery setObject:(id)kCFBooleanTrue            forKey:(id)kSecReturnData];
+        
+        NSData *passwordData = nil;
+        OSStatus result = SecItemCopyMatching((CFDictionaryRef)valueQuery, (CFTypeRef *)&passwordData);
+        if (result == noErr) {
+            
+            // Assume the stored data is a UTF-8 string.
+            uuidString = [[[NSString alloc] initWithBytes:[passwordData bytes]
+                                                   length:[passwordData length]
+                                                 encoding:NSUTF8StringEncoding] autorelease];
+            [passwordData release];
+            
+        }
+    }
 #else
     // UIID may not be persistent
     // Use NSUserDefalt as a storage
@@ -36,10 +71,32 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
         uuidString = (NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
         [uuidString autorelease];
         CFRelease(uuidRef);
+        
 #if UIID_PERSISTENT
         // UIID must be persistent even if the application is removed from devices
         // Use keychain as a storage
-        // TODO:
+        NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                      (id)kSecClassGenericPassword,             (id)kSecClass,
+                                      UIApplication_UIID_Key,                   (id)kSecAttrGeneric,
+                                      UIApplication_UIID_Key,                   (id)kSecAttrAccount,
+                                      [[NSBundle mainBundle] bundleIdentifier], (id)kSecAttrService,
+                                      @"",                                      (id)kSecAttrLabel,
+                                      @"",                                      (id)kSecAttrDescription,
+                                      nil];
+        
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] < 4) {
+            // kSecAttrAccessible is iOS 4 or later only
+            // Current device is running on iOS 3.X, do nothing here
+        } else {
+            [query setObject:(id)kSecAttrAccessibleWhenUnlocked forKey:(id)kSecAttrAccessible];
+        }
+        [query setObject:[uuidString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];
+        
+        OSStatus result = SecItemAdd((CFDictionaryRef)query, NULL);
+        if (result != noErr) {
+            NSLog(@"[ERROR] Couldn't add the Keychain Item. result = %ld query = %@", result, query);
+            return nil;
+        }
 #else
         // UIID may not be persistent
         // Use NSUserDefalt as a storage
