@@ -1,0 +1,32 @@
+# projest specific ignore files
+_build
+CHAOSDK/build
+
+# osx noise files
+.DS_Store
+*.swp
+*.swo
+*.orig
+ 
+# xcode 3 noise files
+build/*
+*.pbxuser
+*.mode1v3
+*.perspectivev3
+
+# xcode 4 noise files
+xcuserdata
+
+# python noise files
+*.pyc
+
+# other IDE noise files
+.idea
+
+# other versioning system noise files (only .git is allowed)
+CVS
+TAG
+.cvsignore
+.svn
+.hg
+.hgignore
