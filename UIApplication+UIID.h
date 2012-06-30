@@ -41,14 +41,17 @@
 @interface UIApplication (UIApplication_UIID)
 
 /*! 
- Returns the unique identifier for this installation of the application.
- This value will change when:
+ @brief Returns the unique identifier for this installation of the application.
+ @discussion The value of uniqueInstallationIdentifier will change when:
  - If UIID_PERSISTENT=1, -resetUniqueInstallationIdentifier is called or the application is installed to the completely new device without using any backups.
  - If UIID_PERSISTENT=0, -resetUniqueInstallationIdentifier is called or the application is removed from the current device.
  */
 - (NSString *)uniqueInstallationIdentifier;
 
-/*! Resets the persisted unique identifier for this installation. */
+/*! 
+ @brief Resets the persisted unique identifier for this installation.
+ @discussion n/a
+ */
 - (void)resetUniqueInstallationIdentifier;
 
 @end
