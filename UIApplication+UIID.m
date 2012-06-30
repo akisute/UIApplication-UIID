@@ -29,6 +29,11 @@
 #import "UIApplication+UIID.h"
 
 
+#if ! __has_feature(objc_arc)
+#warning This file must be compiled with ARC. Use -fobjc-arc flag (or convert project to ARC).
+#endif
+
+
 #if UIID_PERSISTENT
 // Use keychain as a storage
 #import <Security/Security.h>    
@@ -51,33 +56,30 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
     // UIID must be persistent even if the application is removed from devices
     // Use keychain as a storage
     NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           (id)kSecClassGenericPassword,            (id)kSecClass,
-                           UIApplication_UIID_Key,                  (id)kSecAttrGeneric,
-                           UIApplication_UIID_Key,                  (id)kSecAttrAccount,
-                           [[NSBundle mainBundle] bundleIdentifier],(id)kSecAttrService,
-                           (id)kSecMatchLimitOne,                   (id)kSecMatchLimit,
-                           (id)kCFBooleanTrue,                      (id)kSecReturnAttributes,
+                           (__bridge id)kSecClassGenericPassword,   (__bridge id)kSecClass,
+                           UIApplication_UIID_Key,                  (__bridge id)kSecAttrGeneric,
+                           UIApplication_UIID_Key,                  (__bridge id)kSecAttrAccount,
+                           [[NSBundle mainBundle] bundleIdentifier],(__bridge id)kSecAttrService,
+                           (__bridge id)kSecMatchLimitOne,          (__bridge id)kSecMatchLimit,
+                           (__bridge id)kCFBooleanTrue,             (__bridge id)kSecReturnAttributes,
                            nil];
-    NSDictionary *attributes = nil;
-    OSStatus result = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&attributes);
+    CFTypeRef attributesRef = NULL;
+    OSStatus result = SecItemCopyMatching((__bridge CFDictionaryRef)query, &attributesRef);
     if (result == noErr) {
-        
+        NSDictionary *attributes = (__bridge_transfer NSDictionary *)attributesRef;
         NSMutableDictionary *valueQuery = [NSMutableDictionary dictionaryWithDictionary:attributes];
-        [attributes release];
         
-        [valueQuery setObject:(id)kSecClassGenericPassword  forKey:(id)kSecClass];
-        [valueQuery setObject:(id)kCFBooleanTrue            forKey:(id)kSecReturnData];
+        [valueQuery setObject:(__bridge id)kSecClassGenericPassword  forKey:(__bridge id)kSecClass];
+        [valueQuery setObject:(__bridge id)kCFBooleanTrue            forKey:(__bridge id)kSecReturnData];
         
-        NSData *passwordData = nil;
-        OSStatus result = SecItemCopyMatching((CFDictionaryRef)valueQuery, (CFTypeRef *)&passwordData);
+        CFTypeRef passwordDataRef = NULL;
+        OSStatus result = SecItemCopyMatching((__bridge CFDictionaryRef)valueQuery, &passwordDataRef);
         if (result == noErr) {
-            
+            NSData *passwordData = (__bridge_transfer NSData *)passwordDataRef;
             // Assume the stored data is a UTF-8 string.
-            uuidString = [[[NSString alloc] initWithBytes:[passwordData bytes]
+            uuidString = [[NSString alloc] initWithBytes:[passwordData bytes]
                                                    length:[passwordData length]
-                                                 encoding:NSUTF8StringEncoding] autorelease];
-            [passwordData release];
-            
+                                                 encoding:NSUTF8StringEncoding];
         }
     }
 #else
@@ -89,20 +91,19 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
     
     if (uuidString == nil) {
         CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-        uuidString = (NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
-        [uuidString autorelease];
+        uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
         CFRelease(uuidRef);
         
 #if UIID_PERSISTENT
         // UIID must be persistent even if the application is removed from devices
         // Use keychain as a storage
         NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                      (id)kSecClassGenericPassword,             (id)kSecClass,
-                                      UIApplication_UIID_Key,                   (id)kSecAttrGeneric,
-                                      UIApplication_UIID_Key,                   (id)kSecAttrAccount,
-                                      [[NSBundle mainBundle] bundleIdentifier], (id)kSecAttrService,
-                                      @"",                                      (id)kSecAttrLabel,
-                                      @"",                                      (id)kSecAttrDescription,
+                                      (__bridge id)kSecClassGenericPassword,    (__bridge id)kSecClass,
+                                      UIApplication_UIID_Key,                   (__bridge id)kSecAttrGeneric,
+                                      UIApplication_UIID_Key,                   (__bridge id)kSecAttrAccount,
+                                      [[NSBundle mainBundle] bundleIdentifier], (__bridge id)kSecAttrService,
+                                      @"",                                      (__bridge id)kSecAttrLabel,
+                                      @"",                                      (__bridge id)kSecAttrDescription,
                                       nil];
         
         if ([[[UIDevice currentDevice] systemVersion] floatValue] < 4) {
@@ -113,11 +114,11 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
             // Keys defined as kSecAttrAccessibleAfterFirstUnlock will be migrated to the new devices/installations via encrypted backups.
             // If you want different UIID per device, use kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly instead.
             // Keep in mind that keys defined as kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly will be removed after restoring from a backup.
-            [query setObject:(id)kSecAttrAccessibleAfterFirstUnlock forKey:(id)kSecAttrAccessible];
+            [query setObject:(__bridge id)kSecAttrAccessibleAfterFirstUnlock forKey:(__bridge id)kSecAttrAccessible];
         }
-        [query setObject:[uuidString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];
+        [query setObject:[uuidString dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id)kSecValueData];
         
-        OSStatus result = SecItemAdd((CFDictionaryRef)query, NULL);
+        OSStatus result = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
         if (result != noErr) {
             NSLog(@"[ERROR] Couldn't add the Keychain Item. result = %ld query = %@", result, query);
             return nil;
@@ -139,12 +140,12 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
     // UIID must be persistent even if the application is removed from devices
     // Use keychain as a storage
     NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           (id)kSecClassGenericPassword,            (id)kSecClass,
-                           UIApplication_UIID_Key,                  (id)kSecAttrGeneric,
-                           UIApplication_UIID_Key,                  (id)kSecAttrAccount,
-                           [[NSBundle mainBundle] bundleIdentifier],(id)kSecAttrService,
+                           (__bridge id)kSecClassGenericPassword,   (__bridge id)kSecClass,
+                           UIApplication_UIID_Key,                  (__bridge id)kSecAttrGeneric,
+                           UIApplication_UIID_Key,                  (__bridge id)kSecAttrAccount,
+                           [[NSBundle mainBundle] bundleIdentifier],(__bridge id)kSecAttrService,
                            nil];
-    OSStatus result = SecItemDelete((CFDictionaryRef)query);
+    OSStatus result = SecItemDelete((__bridge CFDictionaryRef)query);
     if (result == noErr) {
         NSLog(@"[INFO}  Unique Installation Identifier is successfully reset.");
     } else if (result == errSecItemNotFound) {

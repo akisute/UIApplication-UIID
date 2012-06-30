@@ -34,7 +34,7 @@
  This feature requires Security.framework to be included to your projects.
  */
 #ifndef UIID_PERSISTENT
-#define UIID_PERSISTENT 0
+#define UIID_PERSISTENT 1
 #endif
 
 
