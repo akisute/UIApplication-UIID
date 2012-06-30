@@ -90,9 +90,22 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
 #endif
     
     if (uuidString == nil) {
-        CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-        uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
-        CFRelease(uuidRef);
+        
+        // Generate the new UIID
+        if ([UIDevice instancesRespondToSelector:@selector(identifierForVendor)]) {
+#if UIID_PERSISTENT
+            id identifier = [[UIDevice currentDevice] performSelector:@selector(identifierForVendor)];
+            uuidString = [identifier performSelector:@selector(UUIDString)];
+#else
+            CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
+            uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+            CFRelease(uuidRef);
+#endif
+        } else {
+            CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
+            uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+            CFRelease(uuidRef);
+        }
         
 #if UIID_PERSISTENT
         // UIID must be persistent even if the application is removed from devices

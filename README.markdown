@@ -7,6 +7,20 @@ Original gist is here: https://gist.github.com/1161447
 
 See http://akisute.com/2011/08/udiduiid.html for more information, written in Japanese.
 
+Features
+--------
+
+Version 2 features:
+
+* ARC technology which requires iOS SDK 4.0 or higher to compile. Only runs on iOS 4.0 runtime or above as well.
+* Compatible with `UIDevice.identifierForVendor`.
+    * UIApplication-UIID uses that identifier when creating the new UIID if possible.
+    * UIApplication-UIID uses the saved UIID values if already created for consistent backword compatibility.
+
+Version 1 features:
+
+* Non-ARC code which supports as low as iOS SDK 2.0 and iOS 2.0 runtime.
+
 Usage
 -----
 

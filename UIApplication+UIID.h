@@ -34,7 +34,7 @@
  This feature requires Security.framework to be included to your projects.
  */
 #ifndef UIID_PERSISTENT
-#define UIID_PERSISTENT 1
+#define UIID_PERSISTENT 0
 #endif
 
 
@@ -42,15 +42,32 @@
 
 /*! 
  @brief Returns the unique identifier for this installation of the application.
- @discussion The value of uniqueInstallationIdentifier will change when:
- - If UIID_PERSISTENT=1, -resetUniqueInstallationIdentifier is called or the application is installed to the completely new device without using any backups.
- - If UIID_PERSISTENT=0, -resetUniqueInstallationIdentifier is called or the application is removed from the current device.
+ @return The unique installation identifier generated for this installation of the application. If already generated before, returns that value.
+ @discussion Note that the format of the returned value is UUID, which is completely different from that of UIDevice.uniqueIdnetifier.
+ 
+ When the uniqueInstallationIdentifier is generated, its value will be as follows:
+ * If UIDevice.identifierForVendor is available to use,
+ ** UIDevice.dentifierForVendor.UUIDString if UIID_PERSISTENT=1.
+ * Otherwise, CFUUIDCreateString is used to generate the value.
+ 
+ The value of uniqueInstallationIdentifier will be reset when:
+ * If UIDevice.identifierForVendor is available to use,
+ ** The application is installed on the completely new device if UIID_PERSISTENT=1.
+ ** The application is removed from the current device if UIID_PERSISTENT=0.
+ ** You can't reset the value by using resetUniqueInstallationIdentifier anymore when UIID_PERSISTENT=1.
+ * Otherwise,
+ ** The application is installed on the completely new device without using any backups if UIID_PERSISTENT=1.
+ ** The application is removed from the current device if UIID_PERSISTENT=0.
+ 
+ This value is not aimed for sharing the same identifier among all applications installed on the same device (a.k.a. UDID). If you want to use UDID,
+ * Use UIDevice.identifierForAdvertising instead if possible.
+ * Otherwise, use any other UDID libraries available (I strongly discourage to do so!)
  */
 - (NSString *)uniqueInstallationIdentifier;
 
 /*! 
  @brief Resets the persisted unique identifier for this installation.
- @discussion n/a
+ @discussion Note that you can't reset the value of uniqueInstallationIdentifier when UIID_PERSISTENT=1 and UIDevice.identifierForVendor is available.
  */
 - (void)resetUniqueInstallationIdentifier;
 
