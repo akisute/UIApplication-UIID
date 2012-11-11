@@ -41,6 +41,7 @@
 
 
 static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier";
+static NSString * const UIApplication_UIID_Zero = @"00000000-0000-0000-0000-000000000000";
 
 
 @implementation UIApplication (UIApplication_UIID)
@@ -85,23 +86,34 @@ static NSString * const UIApplication_UIID_Key = @"uniqueInstallationIdentifier"
 #else
     // UIID may not be persistent
     // Use NSUserDefalt as a storage
-    // WARNING: this could be much more vulnerable since the NSUserDefaults stores values as a plist file. Any jailbroken user can extract values from it.
     uuidString = [[NSUserDefaults standardUserDefaults] stringForKey:UIApplication_UIID_Key];
 #endif
     
-    if (uuidString == nil) {
+    // Generate the new UIID when:
+    // * UIID is not generated and saved yet
+    // * The previously generated UIID was a Zero UIID (could happen in iOS 6.0.0, fixed in iOS 6.0.1)
+    if (uuidString == nil || [uuidString isEqualToString:UIApplication_UIID_Zero]) {
         
-        // Generate the new UIID
         if ([UIDevice instancesRespondToSelector:@selector(identifierForVendor)]) {
+            // identifierForVendor is available (iOS 6.0 or above)
+            // When UIID_PERSISTENT is specified, use identifierForVendor rather than generating a new UIID
+            // In iOS 6.0.0, identifierForVendor could return a Zero UIID (which is fixed in iOS 6.0.1) so we have to deal with it
 #if UIID_PERSISTENT
             id identifier = [[UIDevice currentDevice] performSelector:@selector(identifierForVendor)];
             uuidString = [identifier performSelector:@selector(UUIDString)];
+            if ([uuidString isEqualToString:UIApplication_UIID_Zero]) {
+                CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
+                uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+                CFRelease(uuidRef);
+            }
 #else
             CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
             uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
             CFRelease(uuidRef);
 #endif
         } else {
+            // identifierForVendor is not available (iOS 5.X or less)
+            // Generate the new UIID via old-fashioned way
             CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
             uuidString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
             CFRelease(uuidRef);
