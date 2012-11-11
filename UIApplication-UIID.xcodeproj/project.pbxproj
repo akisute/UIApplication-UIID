@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E54A8E9164FAD7A008AFCA9 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0E54A8E8164FAD7A008AFCA9 /* Default-568h@2x.png */; };
 		0E698F11159ECA8E00F48EF2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E698EF0159ECA4900F48EF2 /* Foundation.framework */; };
 		0E698F1E159ECAAE00F48EF2 /* UIApplication+UIID.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E698F1C159ECAAE00F48EF2 /* UIApplication+UIID.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0E698F1F159ECAAE00F48EF2 /* UIApplication+UIID.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E698F1D159ECAAE00F48EF2 /* UIApplication+UIID.m */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0E54A8E8164FAD7A008AFCA9 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		0E698EEE159ECA4900F48EF2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0E698EF0159ECA4900F48EF2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0E698F1C159ECAAE00F48EF2 /* UIApplication+UIID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+UIID.h"; sourceTree = SOURCE_ROOT; };
@@ -130,6 +132,7 @@
 				0E698F35159ECF7600F48EF2 /* UIApplication-UUID-DebugApp-Info.plist */,
 				0E698F36159ECF7600F48EF2 /* InfoPlist.strings */,
 				0E698F39159ECF7600F48EF2 /* main.m */,
+				0E54A8E8164FAD7A008AFCA9 /* Default-568h@2x.png */,
 				0E698F3B159ECF7600F48EF2 /* UIApplication-UUID-DebugApp-Prefix.pch */,
 			);
 			name = "Supporting Files";
@@ -218,6 +221,7 @@
 			files = (
 				0E698F38159ECF7600F48EF2 /* InfoPlist.strings in Resources */,
 				0E698F4C159ED07900F48EF2 /* ViewController.xib in Resources */,
+				0E54A8E9164FAD7A008AFCA9 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
